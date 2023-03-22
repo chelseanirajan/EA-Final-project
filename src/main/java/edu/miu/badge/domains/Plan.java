@@ -22,7 +22,7 @@ public class Plan {
     @Column(nullable = false)
     private String description;
     @ManyToMany
-    @Column(nullable = false)
+    //@Column(nullable = false) what on earth is this line doing??
     @JoinTable(name = "Plan_Plantypes",
             joinColumns = {@JoinColumn(name = "plan_id")},
             inverseJoinColumns = {@JoinColumn(name = "plantype_id")}
