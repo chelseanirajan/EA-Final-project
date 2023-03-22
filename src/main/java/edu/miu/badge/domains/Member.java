@@ -34,5 +34,6 @@ public class Member {
 
 //    @JsonBackReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "member")
+
     private List<Membership> memberships;
 }

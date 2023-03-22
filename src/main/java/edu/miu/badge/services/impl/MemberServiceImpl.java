@@ -1,9 +1,6 @@
 package edu.miu.badge.services.impl;
 
-import edu.miu.badge.domains.Badge;
-import edu.miu.badge.domains.Member;
-import edu.miu.badge.domains.Role;
-import edu.miu.badge.domains.Transaction;
+import edu.miu.badge.domains.*;
 import edu.miu.badge.dto.ResponseBadgeDTO;
 import edu.miu.badge.dto.RequestMemberDTO;
 import edu.miu.badge.dto.ResponseMemberDTO;
@@ -11,6 +8,7 @@ import edu.miu.badge.dto.ResponseTransactionDTO;
 import edu.miu.badge.exceptions.ResourceNotFoundException;
 import edu.miu.badge.repositories.MemberRepository;
 import edu.miu.badge.repositories.RoleRepository;
+import edu.miu.badge.repositories.UserRepository;
 import edu.miu.badge.services.MemberService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +33,8 @@ public class MemberServiceImpl implements MemberService {
     ModelMapper modelMapper;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    UserRepository userRepository;
     @Override
     public ResponseMemberDTO insertNewMember(RequestMemberDTO requestMemberDTO) throws ResourceNotFoundException{
         Set<Role> role = new HashSet<>();
@@ -48,7 +48,13 @@ public class MemberServiceImpl implements MemberService {
         }
         Member member = modelMapper.map(requestMemberDTO, Member.class);
         member.setRoles(role);
-        return modelMapper.map(memberRepository.save(member), ResponseMemberDTO.class);
+        Member savedMember=memberRepository.save(member);
+        User newUser = new User();
+        newUser.setUsername(requestMemberDTO.getUsername());
+        newUser.setPassword(requestMemberDTO.getPassword());
+        newUser.setMemberId(savedMember.getId());
+        userRepository.save(newUser);
+        return modelMapper.map(savedMember, ResponseMemberDTO.class);
     }
 
     @Override
@@ -115,6 +121,4 @@ public class MemberServiceImpl implements MemberService {
                 .map(member -> modelMapper.map(member, ResponseMemberDTO.class))
                 .collect(Collectors.toList());
     }
-
-
 }

@@ -1,6 +1,6 @@
 package edu.miu.badge.services.impl;
 
-import edu.miu.badge.controllers.TransactionNotFoundException;
+import edu.miu.badge.exceptions.TransactionNotFoundException;
 import edu.miu.badge.domains.*;
 import edu.miu.badge.dto.RequestTransactionDTO;
 import edu.miu.badge.dto.ResponseTransactionDTO;
@@ -14,12 +14,12 @@ import edu.miu.badge.services.TransactionService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.chrono.ChronoLocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +45,7 @@ public class TransactionServiceImpl implements TransactionService {
     ModelMapper modelMapper;
 
     @Override
-    public ResponseTransactionDTO createTransaction(RequestTransactionDTO requestTransactionDTO) throws Exception {
+    public ResponseTransactionDTO createTransaction(RequestTransactionDTO requestTransactionDTO) throws TransactionNotFoundException {
         Badge badgeOptional = badgeRepository.getBadgeByBadgeNumber(requestTransactionDTO.getBadgeId())
                 .orElseThrow(() -> {
                     return new TransactionNotFoundException("You are not allowed to use this service!");
@@ -69,7 +69,8 @@ public class TransactionServiceImpl implements TransactionService {
         // Check the member is attended in the right time slot or not
         Location location = locationRepository.findById(requestTransactionDTO.getLocationId().longValue())
                 .orElseThrow(() -> {
-                    return new Exception("Location cannot find.");
+                    return new TransactionException("Location cannot find.") {
+                    };
                 });
         boolean isCorrectTimeSlot = location.getTimeSlots().stream()
                 .anyMatch(timeSlot -> LocalTime.now().isAfter(timeSlot.getStartTime())
@@ -82,16 +83,19 @@ public class TransactionServiceImpl implements TransactionService {
                             && membership.getPlanType().getPlanType().toString().equals(PlanTypeEnum.LIMITED.toString())
                             && membership.getNumberOfAllowance() <= LIMITEDPLAN
                 );
+
+        Transaction transaction = new Transaction();
+        transaction.setMember(badgeOptional.getMember());
+        transaction.setMembership(memberships.stream().filter(membership -> Objects.equals(membership.getPlan().getId(), requestTransactionDTO.getPlanId())).collect(Collectors.toList()).get(0));
+        transaction.setDate(LocalDateTime.now());
+        transaction.setLocation(location);
         if (isExpiredOrMemberShipPlan && isCorrectTimeSlot && isValid) {
-            Transaction transaction = new Transaction();
             transaction.setType(TransactionType.ALLOWED);
-            transaction.setMember(badgeOptional.getMember());
-            transaction.setMembership(memberships.stream().filter(membership -> Objects.equals(membership.getPlan().getId(), requestTransactionDTO.getPlanId())).collect(Collectors.toList()).get(0));
-            transaction.setDate(LocalDateTime.now());
-            transaction.setLocation(location);
             return modelMapper.map(transactionRepository.save(transaction), ResponseTransactionDTO.class);
         } else {
-            throw new TransactionNotFoundException("Transaction cannot be inserted");
+            transaction.setType(TransactionType.DENIED);
+            modelMapper.map(transactionRepository.save(transaction), ResponseTransactionDTO.class);
+            throw new TransactionNotFoundException("Transaction decline!");
         }
 
     }
@@ -105,29 +109,7 @@ public class TransactionServiceImpl implements TransactionService {
         return modelMapper.map(transaction, ResponseTransactionDTO.class);
     }
 
-    @Override
-    public ResponseTransactionDTO updateTransaction(int transactionId, ResponseTransactionDTO transaction) throws TransactionNotFoundException {
-        Transaction transactionToBeUpdated = transactionRepository.findById(transactionId).orElse(null);
-        if (transactionToBeUpdated == null) {
-            throw new TransactionNotFoundException("Transaction with ID " + transactionId + " not found");
-        }
-        transactionToBeUpdated.setDate(transaction.getDate());
-        transactionToBeUpdated.setMember(modelMapper.map(transaction.getMember(), Member.class));
-        transactionToBeUpdated.setMembership(modelMapper.map(transaction.getMembership(), Membership.class));
-        transactionToBeUpdated.setLocation(modelMapper.map(transaction.getLocation(), Location.class));
-        transactionToBeUpdated.setType(transaction.getType());
-        return modelMapper.map(transactionRepository.save(transactionToBeUpdated), ResponseTransactionDTO.class);
-    }
 
-    @Override
-    public String deleteTransaction(int id) throws TransactionNotFoundException {
-        Transaction transaction = transactionRepository.findById(id).orElse(null);
-        if (transaction == null) {
-            throw new TransactionNotFoundException("Transaction with ID " + id + " not found");
-        }
-        transactionRepository.deleteById(id);
-        return "Transaction with ID " + id + " deleted";
-    }
 
     @Override
     public List<ResponseTransactionDTO> getAllTransactions() {

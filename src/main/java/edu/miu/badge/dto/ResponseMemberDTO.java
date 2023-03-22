@@ -21,4 +21,5 @@ public class ResponseMemberDTO {
     private List<Role> roles;
     private List<Badge> badges;
     private List<Membership> memberships;
+
 }
