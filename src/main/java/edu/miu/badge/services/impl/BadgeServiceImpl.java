@@ -42,29 +42,25 @@ public class BadgeServiceImpl implements BadgeService {
 
     @Override
     public ResponseBadgeDTO createBadge(RequestBadgeDTO badge) {                            //exception handling
-        Optional<Member> member = memberRepository.findById(badge.getMemberId());
-        if (!member.isPresent())
+        Optional<Member> optionalMember = memberRepository.findById(badge.getMemberId());
+        if (optionalMember.isEmpty())
             throw new ResourceNotFoundException("Member with ID " + badge.getMemberId() + " not found");
-
+        if(badge.getBadgeStatus().equals(BadgeStatus.INACTIVE))
+            throw new ResourceNotFoundException("You can't create an inactive badge");
         Badge newBadge = new Badge();
-        Optional<Badge> badgeToInactivate = badgeRepository.getActiveBadge(member.get().getId());
-        if(badgeToInactivate.isPresent()){
-            newBadge.setBadgeStatus(BadgeStatus.ACTIVE);
-            newBadge.setMember(member.get());
-            newBadge.setBadgeNumber(badgeToInactivate.get().getBadgeNumber());
-            badgeToInactivate.get().setBadgeStatus(BadgeStatus.INACTIVE);
-            badgeRepository.save(newBadge);
-            badgeRepository.save(badgeToInactivate.get());
-        }
-        else{
-            Random random = new Random();
-            newBadge.setBadgeStatus(BadgeStatus.ACTIVE);
-            newBadge.setMember(member.get());
+        newBadge.setBadgeStatus(BadgeStatus.ACTIVE);
+        newBadge.setMember(optionalMember.get());
+        if(optionalMember.get().getBadges().size() == 0) {
             int number = getNewBadgeNumber();
             newBadge.setBadgeNumber(number);
-            badgeRepository.save(newBadge);
-
         }
+        else{
+            Badge activeBadgeToInactive = badgeRepository.getActiveBadge(badge.getMemberId()).get();
+            newBadge.setBadgeNumber(activeBadgeToInactive.getBadgeNumber());
+            activeBadgeToInactive.setBadgeStatus(BadgeStatus.INACTIVE);
+            badgeRepository.save(activeBadgeToInactive);
+        }
+        badgeRepository.save(newBadge);
         return modelMapper.map(newBadge, ResponseBadgeDTO.class);
     }
 
