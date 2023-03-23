@@ -37,10 +37,10 @@ public class Application implements CommandLineRunner{
         planTypeRepository.save(new PlanType(2, PlanTypeEnum.UNLIMITED));
         planTypeRepository.save(new PlanType(3, PlanTypeEnum.CHECKER));
 
-        roleRepository.save(new Role(1, RoleType.ADMIN, null));
-        roleRepository.save(new Role(2, RoleType.STUDENT, null));
-        roleRepository.save(new Role(3, RoleType.FACULTY, null));
-        roleRepository.save(new Role(4, RoleType.STAFF, null));
+//        roleRepository.save(new Role(1, RoleType.ADMIN, null));
+//        roleRepository.save(new Role(2, RoleType.STUDENT, null));
+//        roleRepository.save(new Role(3, RoleType.FACULTY, null));
+//        roleRepository.save(new Role(4, RoleType.STAFF, null));
     }
     @Bean
     ModelMapper modelMapper() {

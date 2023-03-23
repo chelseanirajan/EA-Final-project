@@ -33,11 +33,6 @@ public class BadgeController {
         return new ResponseEntity<ResponseBadgeDTO>(badgeService.createBadge(badge), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateBadge(@PathVariable int id, @RequestBody RequestBadgeDTO badge) throws ResourceNotFoundException{           // update a badge
-        return new ResponseEntity<ResponseBadgeDTO>(badgeService.updateBadge(id, badge), HttpStatus.OK);
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<?> inactiveBadge(@PathVariable int id) throws ResourceNotFoundException{                        // inactive a badge
         return new ResponseEntity<String>(badgeService.inactiveBadge(id), HttpStatus.OK);
