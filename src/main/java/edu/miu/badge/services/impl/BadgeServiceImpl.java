@@ -65,30 +65,8 @@ public class BadgeServiceImpl implements BadgeService {
     }
 
     @Override
-    public ResponseBadgeDTO updateBadge(int id, RequestBadgeDTO badge) throws ResourceNotFoundException{
-        Optional<Badge> badgeToUpdate = badgeRepository.findById(id);
-        if (badgeToUpdate.isEmpty())
-            throw new ResourceNotFoundException("Badge with ID " + id + " not found");
-        if(badge.getMemberId() != badgeToUpdate.get().getMember().getId())
-            throw new ResourceNotFoundException("Member with ID " + badge.getMemberId() + " not found");
-        if(badge.getBadgeStatus().equals(BadgeStatus.ACTIVE)){
-            badgeRepository.updateBadgeStatusOfMember(badge.getMemberId(), BadgeStatus.INACTIVE);
-            Badge newStatus = badgeToUpdate.get();
-            newStatus.setBadgeStatus(BadgeStatus.ACTIVE);
-            badgeRepository.save(newStatus);
-            return modelMapper.map(newStatus, ResponseBadgeDTO.class);
-        }
-        else{
-            Badge newStatus = badgeToUpdate.get();
-            newStatus.setBadgeStatus(BadgeStatus.INACTIVE);
-            badgeRepository.save(newStatus);
-            return modelMapper.map(newStatus, ResponseBadgeDTO.class);
-        }
-    }
-
-    @Override
     public String inactiveBadge(int id)throws ResourceNotFoundException {
-        Optional<Badge> toInactve = badgeRepository.findById(id);
+        Optional<Badge> toInactve = badgeRepository.getActiveBadge(id);
         if (toInactve.isEmpty())
             throw new ResourceNotFoundException("Badge with ID " + id + " not found");
         if(toInactve.get().getBadgeStatus().equals(BadgeStatus.INACTIVE))

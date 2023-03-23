@@ -48,7 +48,6 @@ public class MemberController {
     }
 
     @GetMapping("/{id}/memberships")
-
     public ResponseEntity<?> getMembershipsByMemberId(@PathVariable int id, @RequestParam(name = "planType", required = false) String planType) {
         return new ResponseEntity<>(membershipService.getMembershipsByMemberId(id, planType), HttpStatus.OK);
     }
