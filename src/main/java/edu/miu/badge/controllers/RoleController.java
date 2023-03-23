@@ -30,10 +30,10 @@ public class RoleController {
     
     @PostMapping
     public List<Role> addAllRoles(){
-        Role faculty = new Role(0, RoleType.FACULTY, null);
-        Role admin = new Role(0, RoleType.ADMIN, null);
-        Role staff = new Role(0, RoleType.STAFF, null);
-        Role student = new Role(0, RoleType.STUDENT, null);
+        Role faculty = new Role(1, RoleType.FACULTY, null);
+        Role admin = new Role(2, RoleType.ADMIN, null);
+        Role staff = new Role(3, RoleType.STAFF, null);
+        Role student = new Role(4, RoleType.STUDENT, null);
         
         roleRepository.save(faculty);
         roleRepository.save(admin);

@@ -1,4 +1,4 @@
-package edu.miu.badge.enumeration;
+package edu.miu.badge.exceptions;
 
 public class TransactionDeclinedException extends RuntimeException{
 

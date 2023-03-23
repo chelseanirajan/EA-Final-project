@@ -1,6 +1,6 @@
 package edu.miu.badge.services;
 
-import edu.miu.badge.enumeration.TransactionDeclinedException;
+import edu.miu.badge.exceptions.TransactionDeclinedException;
 import edu.miu.badge.dto.RequestTransactionDTO;
 import edu.miu.badge.dto.ResponseTransactionDTO;
 import edu.miu.badge.exceptions.ResourceNotFoundException;

@@ -1,12 +1,14 @@
 package edu.miu.badge.services.impl;
 
 
+import edu.miu.badge.exceptions.TransactionDeclinedException;
+
+
 import edu.miu.badge.domains.*;
 import edu.miu.badge.dto.RequestTransactionDTO;
 import edu.miu.badge.dto.ResponseTransactionDTO;
 import edu.miu.badge.enumeration.PlanTypeEnum;
 import edu.miu.badge.enumeration.RoleType;
-import edu.miu.badge.enumeration.TransactionDeclinedException;
 import edu.miu.badge.enumeration.TransactionType;
 import edu.miu.badge.exceptions.ResourceNotFoundException;
 import edu.miu.badge.repositories.BadgeRepository;
@@ -48,7 +50,8 @@ public class TransactionServiceImpl implements TransactionService {
     ModelMapper modelMapper;
 
     @Override
-    public ResponseTransactionDTO createTransaction(RequestTransactionDTO requestTransactionDTO) throws TransactionDeclinedException {
+    public ResponseTransactionDTO createTransaction(RequestTransactionDTO requestTransactionDTO) throws TransactionDeclinedException
+    {
         Transaction transaction = new Transaction();
         transaction.setDate(LocalDateTime.now());
         Badge badgeOptional = badgeRepository.getBadgeByBadgeNumber(requestTransactionDTO.getBadgeId())
@@ -60,8 +63,7 @@ public class TransactionServiceImpl implements TransactionService {
         List<Membership> memberships = membershipRepository.findMembershipsByMemberId(badgeOptional.getMember().getId());
         Member member = badgeOptional.getMember();
         Membership ms = memberships.stream().filter(membership ->
-                        Objects.equals(membership.getPlan().getId(), requestTransactionDTO.getPlanId()))
-                .findFirst().orElseThrow(() -> new TransactionDeclinedException("Membership doesnt exist!"));
+                Objects.equals(membership.getPlan().getId(), requestTransactionDTO.getPlanId())).collect(Collectors.toList()).get(0);
         transaction.setMember(member);
         transaction.setMembership(ms);
         // Is Membership is expired or not.
@@ -71,18 +73,18 @@ public class TransactionServiceImpl implements TransactionService {
                 .stream()
                 .anyMatch(membership -> LocalDate.now().isBefore(membership.getEndDate())
                         && LocalDate.now().isAfter(membership.getStartDate()));
-        if (!isExpiredOrMemberShipPlan) {
+        if(!isExpiredOrMemberShipPlan) {
             transaction.setType(TransactionType.DENIED);
             transactionRepository.save(transaction);
             throw new TransactionDeclinedException("Your membership has expired. Please update before use!");
 
         }
-        //check plan
+            //check plan
         boolean isCorrectPlan = memberships
                 .stream()
                 .map(membership -> membership.getPlan().getId())
-                .anyMatch(planId -> Objects.equals(planId, requestTransactionDTO.getPlanId()));
-        if (!isCorrectPlan) {
+                .anyMatch(planId -> Objects.equals(planId,requestTransactionDTO.getPlanId()));
+        if(!isCorrectPlan) {
             transaction.setType(TransactionType.DENIED);
             transactionRepository.save(transaction);
             throw new TransactionDeclinedException("You dont have a membership for this plan!");
@@ -103,29 +105,31 @@ public class TransactionServiceImpl implements TransactionService {
                 .anyMatch(timeSlot -> LocalTime.now().isAfter(timeSlot.getStartTime())
                         && LocalTime.now().isBefore(timeSlot.getEndTime())
                         && LocalDateTime.now().getDayOfWeek().toString().equals(timeSlot.getDay().toString()));
-        if (!isCorrectTimeSlot) {
+        if(!isCorrectTimeSlot){
             transaction.setType(TransactionType.DENIED);
             transactionRepository.save(transaction);
             throw new TransactionDeclinedException("You cant use this service at this time period!");
         }
         boolean isCountValid = true;
-        if (ms.getPlanType().getPlanType().equals(PlanTypeEnum.LIMITED)) {
-            if (member.getRoles().stream().anyMatch(role -> role.getRoleType().equals(RoleType.STUDENT))) {
-                if (ms.getUsedAllowances() < studentMealPlanLimit) {
-                    ms.setUsedAllowances(ms.getUsedAllowances() + 1);
+        if(ms.getPlanType().getPlanType().equals(PlanTypeEnum.LIMITED)){
+            if(member.getRoles().stream().anyMatch(role -> role.getRoleType().equals(RoleType.STUDENT))){
+                if (ms.getUsedAllowances() < studentMealPlanLimit){
+                    ms.setUsedAllowances(ms.getUsedAllowances() +1);
                     isCountValid = true;
-                } else
+                }
+                else
                     isCountValid = false;
             } else if ((member.getRoles().stream().anyMatch(role -> role.getRoleType().equals(RoleType.STAFF))) ||
                     (member.getRoles().stream().anyMatch(role -> role.getRoleType().equals(RoleType.FACULTY)))) {
-                if (ms.getUsedAllowances() < staffFacultyMealPlanLimit) {
+                if(ms.getUsedAllowances() < staffFacultyMealPlanLimit){
                     ms.setUsedAllowances(ms.getUsedAllowances() + 1);
                     isCountValid = true;
-                } else
+                }
+                else
                     isCountValid = false;
             }
         }
-        if (!isCountValid) {
+        if(!isCountValid) {
             transaction.setType(TransactionType.DENIED);
             transactionRepository.save(transaction);
             throw new TransactionDeclinedException("You have used all your allowance for the period!");
@@ -156,12 +160,11 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Scheduled(fixedRate = 200000)
-    public void resetStudentMealCount() {
+    public void resetStudentMealCount(){
         membershipRepository.updateMembershipsMealCountByStudentRole();
     }
-
     @Scheduled(fixedRate = 500000)
-    public void resetStaffMealCount() {
+    public void resetStaffMealCount(){
         membershipRepository.updateMembershipsMealCountByFacultyRole();
         membershipRepository.updateMembershipsMealCountByStaffRole();
     }

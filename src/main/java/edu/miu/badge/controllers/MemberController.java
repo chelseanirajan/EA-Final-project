@@ -24,57 +24,32 @@ public class MemberController {
     private MembershipService membershipService;
 
     @PostMapping
-    public ResponseEntity<?> createMember(@RequestBody RequestMemberDTO requestMemberDTO){
-        try {
-            return new ResponseEntity<ResponseMemberDTO>(memberService.insertNewMember(requestMemberDTO), HttpStatus.OK);
-        }
-        catch (ResourceNotFoundException e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> createMember(@RequestBody RequestMemberDTO requestMemberDTO) throws ResourceNotFoundException{
+        return new ResponseEntity<ResponseMemberDTO>(memberService.insertNewMember(requestMemberDTO), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getMemberById(@PathVariable int id){
-        try {
-            return new ResponseEntity<ResponseMemberDTO>(memberService.getMemberById(id), HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> getMemberById(@PathVariable int id) throws ResourceNotFoundException{
+        return new ResponseEntity<ResponseMemberDTO>(memberService.getMemberById(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteMemberById(@PathVariable int id){
-        try {
-            return new ResponseEntity<String>(memberService.deleteMemberById(id), HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> deleteMemberById(@PathVariable int id) throws ResourceNotFoundException{
+        return new ResponseEntity<String>(memberService.deleteMemberById(id), HttpStatus.OK);
     }
     @GetMapping("/{id}/badges")                                             // get all badges of a member
-    public ResponseEntity<?> getMemberBadges(@PathVariable int id){
-        try {
-            return new ResponseEntity<List<ResponseBadgeDTO>>(memberService.getMemberBadges(id), HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> getMemberBadges(@PathVariable int id) throws ResourceNotFoundException{
+        return new ResponseEntity<List<ResponseBadgeDTO>>(memberService.getMemberBadges(id), HttpStatus.OK);
     }
 
     @GetMapping("/{id}/transactions")                                           // get all transactions of a member
-    public ResponseEntity<?> getMemberTransactions(@PathVariable int id){
-        try {
-            return new ResponseEntity<List<ResponseTransactionDTO>>(memberService.getMemberTransactions(id), HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> getMemberTransactions(@PathVariable int id) throws ResourceNotFoundException{
+        return new ResponseEntity<List<ResponseTransactionDTO>>(memberService.getMemberTransactions(id), HttpStatus.OK);
     }
 
     @GetMapping("/{id}/memberships")
-    public ResponseEntity<?> getMembershipsByMemberId(@PathVariable int id, @RequestParam(name = "planType", required = false) String planType) throws ResourceNotFoundException {
-        try {
-            return new ResponseEntity<>(membershipService.getMembershipsByMemberId(id, planType), HttpStatus.OK);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> getMembershipsByMemberId(@PathVariable int id, @RequestParam(name = "planType", required = false) String planType) {
+        return new ResponseEntity<>(membershipService.getMembershipsByMemberId(id, planType), HttpStatus.OK);
     }
     @GetMapping
     public ResponseEntity<?> getAllMembers(){
@@ -82,12 +57,8 @@ public class MemberController {
     }
 
     @PutMapping("/{member_id}")
-    public ResponseEntity<?> updateMember(@PathVariable("member_id") int id, @RequestBody RequestMemberDTO requestMemberDTO){
-            try {
-                return new ResponseEntity<>(memberService.updateMember(id, requestMemberDTO), HttpStatus.OK);
-            } catch (ResourceNotFoundException e) {
-                return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-            }
+    public ResponseEntity<?> updateMember(@PathVariable("member_id") int id, @RequestBody RequestMemberDTO requestMemberDTO) throws ResourceNotFoundException{
+        return new ResponseEntity<>(memberService.updateMember(id, requestMemberDTO), HttpStatus.OK);
     }
     @GetMapping("/{memberid}/plans")
     public ResponseEntity<?> getPlansForMember(@PathVariable int memberid){

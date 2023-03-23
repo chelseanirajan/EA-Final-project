@@ -19,36 +19,20 @@ public class MembershipController {
         return new ResponseEntity<>(membershipService.getAll(), HttpStatus.OK);
     }
     @GetMapping("/{membershipId}")
-    public ResponseEntity<?> getMembershipById(@PathVariable int membershipId){
-        try {
-            return new ResponseEntity<>(membershipService.getMembershipById(membershipId), HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> getMembershipById(@PathVariable int membershipId) throws ResourceNotFoundException{
+        return new ResponseEntity<>(membershipService.getMembershipById(membershipId), HttpStatus.OK);
     }
     @PostMapping("")
-    public ResponseEntity<?> create(@RequestBody RequestMembershipDTO membershipDTO){
-        try {
-            return new ResponseEntity<>(membershipService.create(membershipDTO), HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> create(@RequestBody RequestMembershipDTO membershipDTO) throws ResourceNotFoundException{
+        return new ResponseEntity<>(membershipService.create(membershipDTO), HttpStatus.OK);
     }
     @PutMapping("/{membershipId}")
-    public ResponseEntity<?> update(@PathVariable int membershipId, @RequestBody RequestMembershipDTO membershipDTO){
-        try {
-            return new ResponseEntity<>(membershipService.update(membershipId, membershipDTO), HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> update(@PathVariable int membershipId, @RequestBody RequestMembershipDTO membershipDTO) throws ResourceNotFoundException{
+        return new ResponseEntity<>(membershipService.update(membershipId, membershipDTO), HttpStatus.OK);
     }
     @DeleteMapping("/{membershipId}")
-    public ResponseEntity<?> delete(@PathVariable int membershipId){
-        try {
-            return new ResponseEntity<>(membershipService.delete(membershipId), HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<?> delete(@PathVariable int membershipId) throws ResourceNotFoundException{
+        return new ResponseEntity<>(membershipService.delete(membershipId), HttpStatus.OK);
     }
 
 }
